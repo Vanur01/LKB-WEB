@@ -19,7 +19,7 @@ import {
   type OrderDetailsResponse
 } from "@/api/ordersuccess";
 
-const OrderConfirmed = () => {
+const orderConfirmed = () => {
   const searchParams = useSearchParams();
   const [orderDetails, setOrderDetails] = useState<OrderDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -369,7 +369,10 @@ const OrderConfirmed = () => {
   );
 };
 
-const OrderConfirmedPage = () => {
+// Create a capitalized alias for JSX usage
+const OrderConfirmed = orderConfirmed;
+
+const orderConfirmedPage = () => {
   return (
     <Suspense fallback={<div className='min-h-screen bg-zinc-100 flex items-center justify-center'><div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500'></div></div>}>
       <OrderConfirmed />
@@ -377,4 +380,4 @@ const OrderConfirmedPage = () => {
   );
 };
 
-export default OrderConfirmedPage;
+export default orderConfirmedPage;
