@@ -51,6 +51,59 @@ export interface OrderDetailsResponse {
   };
 }
 
+export interface OrderStatusResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  result: Array<{
+    auth_id: string | null;
+    authorization: string | null;
+    bank_reference: string;
+    cf_payment_id: number;
+    entity: string;
+    error_details?: {
+      error_code: string;
+      error_description: string;
+      error_reason: string;
+      error_source: string;
+      error_code_raw: string;
+      error_description_raw: string;
+      error_subcode_raw: string;
+    };
+    is_captured: boolean;
+    order_amount: number;
+    order_id: string;
+    payment_amount: number;
+    payment_completion_time: string;
+    payment_currency: string;
+    payment_gateway_details: {
+      gateway_name: string;
+      gateway_order_id: string;
+      gateway_payment_id: string;
+      gateway_order_reference_id: string;
+      gateway_status_code: string;
+      gateway_settlement: string;
+    };
+    payment_group: string;
+    payment_message: string;
+    payment_method: {
+      card: {
+        card_bank_name: string;
+        card_country: string;
+        card_network: string;
+        card_network_reference_id: string | null;
+        card_number: string;
+        card_sub_type: string;
+        card_type: string;
+        channel: string;
+      };
+    };
+    payment_offers: any;
+    payment_status: 'SUCCESS' | 'FAILED' | 'PENDING';
+    payment_time: string;
+  }>;
+}
+
 // Define base URL for the API
 const API_BASE_URL = "https://api.orderfood.coffee/api/v1";
 
@@ -81,6 +134,37 @@ export const getOrderDetails = async (orderId: string): Promise<OrderDetailsResp
     return data;
   } catch (error) {
     console.error('Error fetching order details:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch order status by order ID
+ * @param orderId - The order ID to fetch status for
+ * @returns Promise<OrderStatusResponse>
+ */
+export const getOrderStatus = async (orderId: string): Promise<OrderStatusResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/orderStatus/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: OrderStatusResponse = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch order status');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching order status:', error);
     throw error;
   }
 };
