@@ -129,7 +129,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
               animate={{ y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Payment Successful! 🎉
+              Payment Successful!
             </motion.h1>
             <motion.p
               className="text-green-100 text-lg"
@@ -255,12 +255,9 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
           </div>
 
           <div className="flex gap-3">
-            <button className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-              Track Order
-            </button>
             <button 
               onClick={() => window.location.href = '/menu'}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors cursor-pointer"
             >
               Order Again
             </button>
@@ -304,7 +301,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
               animate={{ y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Payment Failed �
+              Payment Failed
             </motion.h1>
             <motion.p
               className="text-red-100 text-lg"
@@ -446,9 +443,6 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
           </div>
 
           <div className="flex gap-3">
-            <button className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-lg font-medium transition-colors">
-              Retry Payment
-            </button>
             <button 
               onClick={() => window.location.href = '/menu'}
               className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors"
@@ -495,7 +489,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
               animate={{ y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Payment Processing ⏳
+              Payment Processing
             </motion.h1>
             <motion.p
               className="text-yellow-100 text-lg"
