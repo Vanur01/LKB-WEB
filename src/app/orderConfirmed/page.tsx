@@ -102,7 +102,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
-    className="min-h-screen bg-green-50"
+    className="min-h-screen bg-zinc-100 "
   >
     <div className="max-w-3xl mx-auto px-4 py-8">
       <motion.div
@@ -277,7 +277,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
-    className="min-h-screen bg-red-50"
+    className="min-h-screen bg-zinc-100 "
   >
     <div className="max-w-3xl mx-auto px-4 py-8">
       <motion.div
@@ -468,7 +468,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
-    className="min-h-screen bg-yellow-50"
+    className="min-h-screen bg-zinc-100 "
   >
     <div className="max-w-3xl mx-auto px-4 py-8">
       <motion.div
