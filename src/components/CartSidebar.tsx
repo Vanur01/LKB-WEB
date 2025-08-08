@@ -184,13 +184,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                 {/* Delivery Fee */}
                 <div className="flex justify-between text-sm">
                   <span>Delivery Charges</span>
-                  <span>₹{cartSummary ? cartSummary.deliveryCharge : '30'}</span>
-                </div>
-
-                {/* Tax (18% GST) */}
-                <div className="flex justify-between text-sm">
-                  <span>Tax (18% GST)</span>
-                  <span>₹{cartSummary ? cartSummary.gst : (getTotalPrice() * 0.18).toFixed(2)}</span>
+                  <span>₹{cartSummary ? cartSummary.deliveryCharge : '15'}</span>
                 </div>
 
                 {/* Total */}

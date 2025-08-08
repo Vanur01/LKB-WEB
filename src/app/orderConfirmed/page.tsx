@@ -4,21 +4,13 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CheckCircleIcon,
-  TruckIcon,
-  HomeIcon,
-  PhoneIcon,
   ClockIcon,
-  BuildingStorefrontIcon,
   XCircleIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import {
   getOrderDetails,
   getOrderStatus,
-  formatCurrency,
   formatDate,
-  getStatusColor,
-  getPaymentStatusColor,
   type OrderDetailsResponse,
   type OrderStatusResponse
 } from "@/api/ordersuccess";
@@ -157,7 +149,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-green-700">Amount Paid:</span>
-                <span className="text-green-800 font-medium">{formatCurrency(paymentDetails.payment_amount)}</span>
+                <span className="text-green-800 font-medium">{(paymentDetails.payment_amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-green-700">Transaction ID:</span>
@@ -190,9 +182,9 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
                 <div key={item._id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{formatCurrency(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -235,20 +227,17 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{formatCurrency(order.totalAmount)}</span>
+                <span className="text-gray-800">{(order.totalAmount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{formatCurrency(order.deliveryCharges)}</span>
+                <span className="text-gray-800">{(order.deliveryCharges)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">GST</span>
-                <span className="text-gray-800">{formatCurrency(order.gstAmount)}</span>
-              </div>
+            
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Grand Total</span>
-                  <span className="font-bold text-green-600">{formatCurrency(order.grandTotal)}</span>
+                  <span className="font-bold text-green-600">{(order.grandTotal)}</span>
                 </div>
               </div>
             </div>
@@ -329,7 +318,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-red-700">Attempted Amount:</span>
-                <span className="text-red-800 font-medium">{formatCurrency(paymentDetails.payment_amount)}</span>
+                <span className="text-red-800 font-medium">{(paymentDetails.payment_amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-red-700">Transaction ID:</span>
@@ -367,9 +356,9 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
                 <div key={item._id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3 opacity-75">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{formatCurrency(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -412,20 +401,16 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{formatCurrency(order.totalAmount)}</span>
+                <span className="text-gray-800">{(order.totalAmount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{formatCurrency(order.deliveryCharges)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">GST</span>
-                <span className="text-gray-800">{formatCurrency(order.gstAmount)}</span>
+                <span className="text-gray-800">{(order.deliveryCharges)}</span>
               </div>
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Amount to Pay</span>
-                  <span className="font-bold text-red-600">{formatCurrency(order.grandTotal)}</span>
+                  <span className="font-bold text-red-600">{(order.grandTotal)}</span>
                 </div>
               </div>
             </div>
@@ -517,7 +502,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-yellow-700">Processing Amount:</span>
-                <span className="text-yellow-800 font-medium">{formatCurrency(paymentDetails?.payment_amount || order.grandTotal)}</span>
+                <span className="text-yellow-800 font-medium">{(paymentDetails?.payment_amount || order.grandTotal)}</span>
               </div>
               {paymentDetails && (
                 <>
@@ -587,9 +572,9 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
                 <div key={item._id} className="flex justify-between items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{formatCurrency(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -632,20 +617,17 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{formatCurrency(order.totalAmount)}</span>
+                <span className="text-gray-800">{(order.totalAmount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{formatCurrency(order.deliveryCharges)}</span>
+                <span className="text-gray-800">{(order.deliveryCharges)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">GST</span>
-                <span className="text-gray-800">{formatCurrency(order.gstAmount)}</span>
-              </div>
+            
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Processing Amount</span>
-                  <span className="font-bold text-yellow-600">{formatCurrency(order.grandTotal)}</span>
+                  <span className="font-bold text-yellow-600">{(order.grandTotal)}</span>
                 </div>
               </div>
             </div>

@@ -169,14 +169,6 @@ export const getOrderStatus = async (orderId: string): Promise<OrderStatusRespon
   }
 };
 
-/**
- * Utility function to format currency
- * @param amount - Amount to format
- * @returns Formatted currency string
- */
-export const formatCurrency = (amount: number): string => {
-  return `₹${amount.toFixed(2)}`;
-};
 
 /**
  * Utility function to format date
