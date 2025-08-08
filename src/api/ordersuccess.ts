@@ -105,7 +105,7 @@ export interface OrderStatusResponse {
 }
 
 // Define base URL for the API
-const API_BASE_URL = "http://localhost:9001/api/v1";
+const API_BASE_URL = "https://api.orderfood.coffee/api/v1";
 
 /**
  * Fetch order details by order ID
