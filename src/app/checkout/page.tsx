@@ -457,20 +457,7 @@ const CheckoutPage = () => {
                           <span className="font-medium">
                             ₹{cartSummary ? cartSummary.deliveryCharge : deliveryCharges.toFixed(2)}
                           </span>
-                        </motion.div>
-
-                        {/* Tax */}
-                        <motion.div
-                          className="flex justify-between text-sm sm:text-base text-zinc-600"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6 }}
-                        >
-                          <span>Tax (18% GST)</span>
-                          <span className="font-medium">
-                            ₹{cartSummary ? cartSummary.gst : (getTotalPrice() * 0.18).toFixed(2)}
-                          </span>
-                        </motion.div>
+                        </motion.div>                      
                       </div>
                     </motion.div>
                   </div>

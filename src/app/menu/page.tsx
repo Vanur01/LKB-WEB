@@ -5,10 +5,20 @@ import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { useCart } from "@/contexts/CartContext";
 import { fetchMenuItems, MenuItem } from "@/api/Menu/page";
 
+// Define the Category type
+interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 const MenuPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDiet, setSelectedDiet] = useState("All");
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<(MenuItem & { category: string | Category })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,13 +46,21 @@ const MenuPage = () => {
     loadMenuItems();
   }, [currentPage, itemsPerPage]);
 
-  // Extract unique categories from API data
-  const categories = ["All", ...Array.from(new Set(menuItems.map(item => item.category)))];
+  // Extract unique categories from menu items and handle category objects
+  const uniqueCategories = [...new Set(menuItems.map(item => {
+    return typeof item.category === 'object' && item.category !== null
+      ? (item.category as Category).name
+      : item.category;
+  }))];
+  const categories = ["All", ...uniqueCategories];
   const diets = ["All", "Veg", "Non-Veg"];
 
   const filteredItems = menuItems.filter((item) => {
+    const itemCategory = typeof item.category === 'object' && item.category !== null 
+      ? (item.category as Category).name 
+      : item.category;
     const categoryMatch =
-      selectedCategory === "All" || item.category === selectedCategory;
+      selectedCategory === "All" || itemCategory === selectedCategory;
     const dietMatch =
       selectedDiet === "All" ||
       (selectedDiet === "Veg" && item.isVeg) ||
@@ -150,9 +168,9 @@ const MenuPage = () => {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2 sm:gap-2">
-                  {categories.map((category) => (
+                  {categories.map((category, index) => (
                     <button
-                      key={category}
+                      key={`${category}-${index}`}
                       onClick={() => setSelectedCategory(category)}
                       className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                         selectedCategory === category
