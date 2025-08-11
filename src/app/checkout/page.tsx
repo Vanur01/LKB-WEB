@@ -88,7 +88,7 @@ const CheckoutPage = () => {
       try {
         if (typeof window !== 'undefined') {
           const cashfree = await load({
-            mode: "sandbox" // Use "sandbox" for testing
+            mode: "production"
           });
           setCashfreeInstance(cashfree);
         }
@@ -447,6 +447,8 @@ const CheckoutPage = () => {
                         </motion.div>
 
                         {/* Delivery Fee */}
+                        {selectedOption === "delivery" && (
+
                         <motion.div
                           className="flex justify-between text-sm sm:text-base text-zinc-600"
                           initial={{ opacity: 0, y: 5 }}
@@ -457,7 +459,9 @@ const CheckoutPage = () => {
                           <span className="font-medium">
                             ₹{cartSummary ? cartSummary.deliveryCharge : deliveryCharges.toFixed(2)}
                           </span>
-                        </motion.div>                      
+                        </motion.div> 
+                        )}
+                     
                       </div>
                     </motion.div>
                   </div>
@@ -488,7 +492,12 @@ const CheckoutPage = () => {
                           stiffness: 200,
                         }}
                       >
-                        ₹{cartSummary ? cartSummary.totalWithExtras : (getTotalPrice())}
+                        ₹{(() => {
+                          const subtotal = cartSummary ? parseFloat(cartSummary.totalPrice.toString()) : getTotalPrice();
+                          const delivery = selectedOption === "delivery" ? 
+                            (cartSummary ? parseFloat(cartSummary.deliveryCharge.toString()) : deliveryCharges) : 0;
+                          return (subtotal + delivery).toFixed(2);
+                        })()}
                       </motion.span>
                     </div>
                   </motion.div>
@@ -791,24 +800,38 @@ const CheckoutPage = () => {
                         </div>
 
                         {/* Phone Number */}
-                        <div>
-                          <label className="block text-sm font-medium text-zinc-700 mb-2">
-                            Phone Number *
-                          </label>
-                          <input
-                            type="tel"
-                            placeholder="Enter your phone number"
-                            value={formData.phoneNumber}
-                            onChange={(e) => {
-                              handleInputChange("phoneNumber", e.target.value);
-                              if (e.target.value) setValidationErrors({...validationErrors, phoneNumber: false});
-                            }}
-                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
-                          />
-                          {validationErrors.phoneNumber && (
-                            <p className="mt-1 text-sm text-red-600">Phone number is required</p>
-                          )}
-                        </div>
+                       <div>
+  <label className="block text-sm font-medium text-zinc-700 mb-2">
+    Phone Number *
+  </label>
+  <input
+    type="tel"
+    placeholder="Enter 10-digit number (e.g., 1234567890)"
+    value={formData.phoneNumber}
+    onChange={(e) => {
+      // Strip all non-digits and limit to 10 characters
+      const rawValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+      handleInputChange("phoneNumber", rawValue);
+
+      // Validate (exactly 10 digits)
+      const isValid = rawValue.length === 10;
+      setValidationErrors({
+        ...validationErrors,
+        phoneNumber: !isValid,
+      });
+    }}
+    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+      validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'
+    } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+  />
+  {validationErrors.phoneNumber && (
+    <p className="mt-1 text-sm text-red-600">
+      {!formData.phoneNumber
+        ? "Phone number is required"
+        : "Must be exactly 10 digits (no symbols)"}
+    </p>
+  )}
+</div>
                       </div>
                     </div>
 
@@ -908,24 +931,37 @@ const CheckoutPage = () => {
                         </div>
 
                         {/* Phone Number */}
-                        <div>
-                          <label className="block text-sm font-medium text-zinc-700 mb-2">
-                            Phone Number *
-                          </label>
-                          <input
-                            type="tel"
-                            placeholder="Enter your phone number"
-                            value={formData.phoneNumber}
-                            onChange={(e) => {
-                              handleInputChange("phoneNumber", e.target.value);
-                              if (e.target.value) setValidationErrors({...validationErrors, phoneNumber: false});
-                            }}
-                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
-                          />
-                          {validationErrors.phoneNumber && (
-                            <p className="mt-1 text-sm text-red-600">Phone number is required</p>
-                          )}
-                        </div>
+                       <div>
+  <label className="block text-sm font-medium text-zinc-700 mb-2">
+    Phone Number *
+  </label>
+  <input
+    type="tel"
+    placeholder="Enter 10-digit phone number"
+    value={formData.phoneNumber}
+    onChange={(e) => {
+      // Only allow digits and limit to 10 characters
+      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+      handleInputChange("phoneNumber", value);
+      
+      // Validate exactly 10 digits
+      const isValid = value.length === 10;
+      
+      setValidationErrors({
+        ...validationErrors, 
+        phoneNumber: !isValid
+      });
+    }}
+    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+      validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'
+    } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+  />
+  {validationErrors.phoneNumber && (
+    <p className="mt-1 text-sm text-red-600">
+      {formData.phoneNumber ? 'Please enter exactly 10 digits' : 'Phone number is required'}
+    </p>
+  )}
+</div>
 
                         {/* Table Number */}
                         <div>

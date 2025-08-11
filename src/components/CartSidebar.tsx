@@ -182,16 +182,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                 </div>
 
                 {/* Delivery Fee */}
-                <div className="flex justify-between text-sm">
+                {/* <div className="flex justify-between text-sm">
                   <span>Delivery Charges</span>
                   <span>₹{cartSummary ? cartSummary.deliveryCharge : '15'}</span>
-                </div>
+                </div> */}
 
                 {/* Total */}
                 <div className="border-t pt-3 border-zinc-300">
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>₹{cartSummary ? cartSummary.totalWithExtras : getTotalPrice()}</span>
+                    <span>₹{cartSummary ? cartSummary.totalPrice : getTotalPrice()}</span>
                   </div>
                 </div>
               </div>
