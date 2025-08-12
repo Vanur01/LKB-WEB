@@ -35,7 +35,7 @@ const MenuPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage] = useState(24);
+  const [itemsPerPage] = useState(32);
 
   const { addToCart, cartItems } = useCart();
 
