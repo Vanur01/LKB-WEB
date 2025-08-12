@@ -96,7 +96,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
     transition={{ duration: 0.5 }}
     className="min-h-screen bg-zinc-100 "
   >
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -146,7 +146,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
           {/* Payment Details */}
           <div className="bg-green-50 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-green-800 mb-3">💳 Payment Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1  gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-green-700">Amount Paid:</span>
                 <span className="text-green-800 font-medium">₹{paymentDetails.grandTotal}</span>
@@ -162,10 +162,6 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
               <div className="flex justify-between">
                 <span className="text-green-700">Order ID:</span>
                 <span className="text-green-800 font-medium">{paymentDetails.orderId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-green-700">Payment Session:</span>
-                <span className="text-green-800 font-medium">{paymentDetails.paymentSessionId?.slice(0, 20)}...</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-green-700">Order Time:</span>
@@ -287,7 +283,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
     transition={{ duration: 0.5 }}
     className="min-h-screen bg-zinc-100 "
   >
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -337,7 +333,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
           {/* Payment Failure Details */}
           <div className="bg-red-50 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-red-800 mb-3">❌ Payment Failure Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-red-700">Attempted Amount:</span>
                 <span className="text-red-800 font-medium">₹{paymentDetails.grandTotal}</span>
@@ -494,7 +490,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
     transition={{ duration: 0.5 }}
     className="min-h-screen bg-zinc-100 "
   >
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -544,7 +540,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
           {/* Payment Processing Details */}
           <div className="bg-yellow-50 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-yellow-800 mb-3">💳 Payment Processing Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-yellow-700">Processing Amount:</span>
                 <span className="text-yellow-800 font-medium">₹{paymentDetails.grandTotal}</span>
