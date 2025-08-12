@@ -18,7 +18,9 @@ interface Category {
 const MenuPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDiet, setSelectedDiet] = useState("All");
-  const [menuItems, setMenuItems] = useState<(MenuItem & { category: string | Category })[]>([]);
+  const [menuItems, setMenuItems] = useState<
+    (MenuItem & { category: string | Category })[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +39,9 @@ const MenuPage = () => {
         setMenuItems(response.result.menus);
         setTotalPages(response.result.pages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load menu items");
+        setError(
+          err instanceof Error ? err.message : "Failed to load menu items"
+        );
       } finally {
         setLoading(false);
       }
@@ -47,18 +51,23 @@ const MenuPage = () => {
   }, [currentPage, itemsPerPage]);
 
   // Extract unique categories from menu items and handle category objects
-  const uniqueCategories = [...new Set(menuItems.map(item => {
-    return typeof item.category === 'object' && item.category !== null
-      ? (item.category as Category).name
-      : item.category;
-  }))];
+  const uniqueCategories = [
+    ...new Set(
+      menuItems.map((item) => {
+        return typeof item.category === "object" && item.category !== null
+          ? (item.category as Category).name
+          : item.category;
+      })
+    ),
+  ];
   const categories = ["All", ...uniqueCategories];
   const diets = ["All", "Veg", "Non-Veg"];
 
   const filteredItems = menuItems.filter((item) => {
-    const itemCategory = typeof item.category === 'object' && item.category !== null 
-      ? (item.category as Category).name 
-      : item.category;
+    const itemCategory =
+      typeof item.category === "object" && item.category !== null
+        ? (item.category as Category).name
+        : item.category;
     const categoryMatch =
       selectedCategory === "All" || itemCategory === selectedCategory;
     const dietMatch =
@@ -70,7 +79,7 @@ const MenuPage = () => {
 
   // Convert API MenuItem to Cart MenuItem format
   const convertToCartItem = (apiItem: MenuItem) => ({
-    id: parseInt(apiItem._id.slice(-6), 16), 
+    id: parseInt(apiItem._id.slice(-6), 16),
     originalId: apiItem._id, // Keep original ID for API calls
     name: apiItem.name,
     description: apiItem.description,
@@ -79,19 +88,19 @@ const MenuPage = () => {
     isVeg: apiItem.isVeg,
     category: apiItem.category,
   });
-  
+
   // Check if an item is in the cart
   const isItemInCart = (itemId: number) => {
-    return cartItems.some(cartItem => cartItem.id === itemId);
+    return cartItems.some((cartItem) => cartItem.id === itemId);
   };
 
   // Function to handle image URLs properly
   const getImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return '';
-    
+    if (!imageUrl) return "";
+
     // If it's a relative path, use it directly
-    if (imageUrl.startsWith('/')) return imageUrl;
-    
+    if (imageUrl.startsWith("/")) return imageUrl;
+
     try {
       // Check if URL is valid
       const url = new URL(imageUrl);
@@ -99,7 +108,7 @@ const MenuPage = () => {
       return imageUrl;
     } catch (e) {
       // If not a valid URL format, return empty
-      return '';
+      return "";
     }
   };
 
@@ -167,23 +176,26 @@ const MenuPage = () => {
                     Categories:
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2 sm:gap-2">
-                  {categories.map((category, index) => (
-                    <button
-                      key={`${category}-${index}`}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-                        selectedCategory === category
-                          ? "bg-orange-500 text-white shadow-lg"
-                          : "bg-white text-gray-700 hover:border-orange-500 hover:text-orange-500 cursor-pointer border border-gray-200"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
+                <div className="relative w-full sm:w-[30rem]">
+                  <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+                    <div className="flex flex-nowrap gap-2 sm:gap-2">
+                      {categories.map((category, index) => (
+                        <button
+                          key={`${category}-${index}`}
+                          onClick={() => setSelectedCategory(category)}
+                          className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 ${
+                            selectedCategory === category
+                              ? "bg-orange-500 text-white shadow-lg"
+                              : "bg-white text-gray-700 hover:border-orange-500 hover:text-orange-500 cursor-pointer border border-gray-200"
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-
               {/* Diet Filter */}
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <span className="text-gray-600 font-medium text-sm sm:text-base flex-shrink-0">
@@ -260,9 +272,10 @@ const MenuPage = () => {
                     <div className="w-full flex items-center justify-between">
                       <div className="flex items-center space-x-1 text-green-600">
                         <span className="text-lg">✓</span>
-                        <span className="text-sm font-medium">Added to cart</span>
+                        <span className="text-sm font-medium">
+                          Added to cart
+                        </span>
                       </div>
-                      
                     </div>
                   ) : (
                     <button
@@ -297,12 +310,14 @@ const MenuPage = () => {
               <div className="flex items-center space-x-2">
                 {/* Previous Page Button */}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={currentPage === 1}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     currentPage === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-orange-500 hover:bg-orange-50 border border-orange-500'
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-orange-500 hover:bg-orange-50 border border-orange-500"
                   }`}
                 >
                   ←
@@ -313,8 +328,10 @@ const MenuPage = () => {
                   {[...Array(totalPages)].map((_, index) => {
                     const pageNumber = index + 1;
                     const isCurrentPage = pageNumber === currentPage;
-                    const isNearCurrent = Math.abs(pageNumber - currentPage) <= 1;
-                    const isFirstOrLast = pageNumber === 1 || pageNumber === totalPages;
+                    const isNearCurrent =
+                      Math.abs(pageNumber - currentPage) <= 1;
+                    const isFirstOrLast =
+                      pageNumber === 1 || pageNumber === totalPages;
 
                     if (isNearCurrent || isFirstOrLast) {
                       return (
@@ -323,8 +340,8 @@ const MenuPage = () => {
                           onClick={() => setCurrentPage(pageNumber)}
                           className={`mx-1 min-w-[40px] h-10 rounded-lg transition-all duration-200 ${
                             isCurrentPage
-                              ? 'bg-orange-500 text-white font-medium shadow-lg transform scale-110'
-                              : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-500'
+                              ? "bg-orange-500 text-white font-medium shadow-lg transform scale-110"
+                              : "bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-500"
                           }`}
                         >
                           {pageNumber}
@@ -346,12 +363,14 @@ const MenuPage = () => {
 
                 {/* Next Page Button */}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   disabled={currentPage === totalPages}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                     currentPage === totalPages
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-orange-500 hover:bg-orange-50 border border-orange-500'
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-orange-500 hover:bg-orange-50 border border-orange-500"
                   }`}
                 >
                   →

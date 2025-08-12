@@ -55,53 +55,27 @@ export interface OrderStatusResponse {
   success: boolean;
   statusCode: number;
   message: string;
-  result: Array<{
-    auth_id: string | null;
-    authorization: string | null;
-    bank_reference: string;
-    cf_payment_id: number;
-    entity: string;
-    error_details?: {
-      error_code: string;
-      error_description: string;
-      error_reason: string;
-      error_source: string;
-      error_code_raw: string;
-      error_description_raw: string;
-      error_subcode_raw: string;
-    };
-    is_captured: boolean;
-    order_amount: number;
-    order_id: string;
-    payment_amount: number;
-    payment_completion_time: string;
-    payment_currency: string;
-    payment_gateway_details: {
-      gateway_name: string;
-      gateway_order_id: string;
-      gateway_payment_id: string;
-      gateway_order_reference_id: string;
-      gateway_status_code: string;
-      gateway_settlement: string;
-    };
-    payment_group: string;
-    payment_message: string;
-    payment_method: {
-      card: {
-        card_bank_name: string;
-        card_country: string;
-        card_network: string;
-        card_network_reference_id: string | null;
-        card_number: string;
-        card_sub_type: string;
-        card_type: string;
-        channel: string;
-      };
-    };
-    payment_offers: any;
-    payment_status: 'SUCCESS' | 'FAILED' | 'PENDING';
-    payment_time: string;
-  }>;
+  result: {
+    _id: string;
+    items: OrderItem[];
+    totalAmount: number;
+    deliveryCharges: number;
+    grandTotal: number;
+    orderType: 'delivery' | 'dinein';
+    deliveryDetails?: DeliveryDetails;
+    dineInDetails?: DineInDetails;
+    isPaid: boolean;
+    paymentStatus: 'PENDING' | 'SUCCESS' | 'FAILED';
+    status: 'pending' | 'confirmed' | 'preparing' | 'delivered' | 'cancelled';
+    createdAt: string;
+    updatedAt: string;
+    orderId: string;
+    paymentSessionId: string;
+    returnUrl: string;
+    transactionId: string;
+    notifyUrl: string;
+    __v: number;
+  };
 }
 
 // Define base URL for the API

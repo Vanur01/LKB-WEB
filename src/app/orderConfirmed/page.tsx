@@ -82,10 +82,10 @@ const orderConfirmed = () => {
   const { result: statusResult } = orderStatus;
   
   // Get the latest payment status from the order status API
-  const latestPaymentStatus = statusResult.length > 0 ? statusResult[0].payment_status : 'PENDING';
+  const latestPaymentStatus = statusResult.paymentStatus;
   
   // Render different modals based on payment status
-  return renderPaymentStatusModal(order, latestPaymentStatus, statusResult[0]);
+  return renderPaymentStatusModal(order, latestPaymentStatus, statusResult);
 };
 
 // Payment Success Modal Component
@@ -139,7 +139,7 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
           {/* Order Summary */}
           <div className="text-center mb-6">
             <p className="text-lg text-green-600 font-semibold">Order #{order.orderId}</p>
-            <p className="text-gray-600">Thank you {order.deliveryDetails?.firstName} {order.deliveryDetails?.lastName}</p>
+            <p className="text-gray-600">Thank you {order.orderType === 'delivery' ? order.deliveryDetails?.firstName : order.dineInDetails?.firstName} {order.orderType === 'delivery' ? order.deliveryDetails?.lastName : order.dineInDetails?.lastName}</p>
             <p className="text-sm text-gray-500">Order placed on {formatDate(order.createdAt)}</p>
           </div>
 
@@ -149,27 +149,27 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-green-700">Amount Paid:</span>
-                <span className="text-green-800 font-medium">{(paymentDetails.payment_amount)}</span>
+                <span className="text-green-800 font-medium">₹{paymentDetails.grandTotal}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-green-700">Transaction ID:</span>
-                <span className="text-green-800 font-medium">{paymentDetails.cf_payment_id}</span>
+                <span className="text-green-800 font-medium">{paymentDetails.transactionId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-green-700">Payment Method:</span>
-                <span className="text-green-800 font-medium">{paymentDetails.payment_method.card.card_type.toUpperCase()}</span>
+                <span className="text-green-700">Payment Status:</span>
+                <span className="text-green-800 font-medium">{paymentDetails.paymentStatus}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-green-700">Card Number:</span>
-                <span className="text-green-800 font-medium">{paymentDetails.payment_method.card.card_number}</span>
+                <span className="text-green-700">Order ID:</span>
+                <span className="text-green-800 font-medium">{paymentDetails.orderId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-green-700">Bank:</span>
-                <span className="text-green-800 font-medium">{paymentDetails.payment_method.card.card_bank_name}</span>
+                <span className="text-green-700">Payment Session:</span>
+                <span className="text-green-800 font-medium">{paymentDetails.paymentSessionId?.slice(0, 20)}...</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-green-700">Payment Time:</span>
-                <span className="text-green-800 font-medium">{formatDate(paymentDetails.payment_completion_time)}</span>
+                <span className="text-green-700">Order Time:</span>
+                <span className="text-green-800 font-medium">{formatDate(paymentDetails.createdAt)}</span>
               </div>
             </div>
           </div>
@@ -182,15 +182,15 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
                 <div key={item._id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × ₹{item.price}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">₹{item.price * item.quantity}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Delivery Details */}
+          {/* Delivery/Dine-in Details */}
           {order.orderType === 'delivery' && order.deliveryDetails && (
             <div className="mb-6">
               <h3 className="font-semibold text-gray-800 mb-3">🚚 Delivery Information</h3>
@@ -221,23 +221,45 @@ const PaymentSuccessModal = ({ order, paymentDetails }: { order: any; paymentDet
             </div>
           )}
 
+          {/* Dine-in Details */}
+          {order.orderType === 'dinein' && order.dineInDetails && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-800 mb-3">🍽️ Dine-in Information</h3>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Name:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.firstName} {order.dineInDetails.lastName}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Table Number:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.tableNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bill Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-gray-800 mb-3">📋 Bill Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{(order.totalAmount)}</span>
+                <span className="text-gray-800">₹{order.totalAmount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{(order.deliveryCharges)}</span>
+                <span className="text-gray-800">₹{order.deliveryCharges}</span>
               </div>
-            
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Grand Total</span>
-                  <span className="font-bold text-green-600">{(order.grandTotal)}</span>
+                  <span className="font-bold text-green-600">₹{order.grandTotal}</span>
                 </div>
               </div>
             </div>
@@ -308,7 +330,7 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
           {/* Order Summary */}
           <div className="text-center mb-6">
             <p className="text-lg text-red-600 font-semibold">Order #{order.orderId}</p>
-            <p className="text-gray-600">Hi {order.deliveryDetails?.firstName} {order.deliveryDetails?.lastName}</p>
+            <p className="text-gray-600">Hi {order.orderType === 'delivery' ? order.deliveryDetails?.firstName : order.dineInDetails?.firstName} {order.orderType === 'delivery' ? order.deliveryDetails?.lastName : order.dineInDetails?.lastName}</p>
             <p className="text-sm text-gray-500">Order attempted on {formatDate(order.createdAt)}</p>
           </div>
 
@@ -318,32 +340,32 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-red-700">Attempted Amount:</span>
-                <span className="text-red-800 font-medium">{(paymentDetails.payment_amount)}</span>
+                <span className="text-red-800 font-medium">₹{paymentDetails.grandTotal}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-red-700">Transaction ID:</span>
-                <span className="text-red-800 font-medium">{paymentDetails.cf_payment_id}</span>
+                <span className="text-red-800 font-medium">{paymentDetails.transactionId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-red-700">Error Code:</span>
-                <span className="text-red-800 font-medium">{paymentDetails.error_details?.error_code || 'N/A'}</span>
+                <span className="text-red-700">Order ID:</span>
+                <span className="text-red-800 font-medium">{paymentDetails.orderId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-red-700">Error Reason:</span>
-                <span className="text-red-800 font-medium">{paymentDetails.error_details?.error_reason || 'N/A'}</span>
+                <span className="text-red-700">Payment Status:</span>
+                <span className="text-red-800 font-medium">{paymentDetails.paymentStatus}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-red-700">Payment Method:</span>
-                <span className="text-red-800 font-medium">{paymentDetails.payment_method?.card?.card_type?.toUpperCase() || 'N/A'}</span>
+                <span className="text-red-700">Order Status:</span>
+                <span className="text-red-800 font-medium">{paymentDetails.status}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-red-700">Failure Time:</span>
-                <span className="text-red-800 font-medium">{formatDate(paymentDetails.payment_completion_time)}</span>
+                <span className="text-red-700">Attempt Time:</span>
+                <span className="text-red-800 font-medium">{formatDate(paymentDetails.updatedAt)}</span>
               </div>
             </div>
             <div className="mt-3 p-3 bg-red-100 rounded-lg">
               <p className="text-red-700 text-sm">
-                <strong>Reason:</strong> {paymentDetails.error_details?.error_description || 'Payment was declined by your bank.'}
+                <strong>Reason:</strong> Payment was declined or failed to process. Please try again with a different payment method.
               </p>
             </div>
           </div>
@@ -356,15 +378,15 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
                 <div key={item._id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3 opacity-75">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × ₹{item.price}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">₹{item.price * item.quantity}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Delivery Details */}
+          {/* Delivery/Dine-in Details */}
           {order.orderType === 'delivery' && order.deliveryDetails && (
             <div className="mb-6">
               <h3 className="font-semibold text-gray-800 mb-3">🚚 Delivery Information</h3>
@@ -395,22 +417,45 @@ const PaymentFailedModal = ({ order, paymentDetails }: { order: any; paymentDeta
             </div>
           )}
 
+          {/* Dine-in Details */}
+          {order.orderType === 'dinein' && order.dineInDetails && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-800 mb-3">🍽️ Dine-in Information</h3>
+              <div className="bg-gray-50 rounded-lg p-4 opacity-75">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Name:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.firstName} {order.dineInDetails.lastName}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Table Number:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.tableNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bill Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-gray-800 mb-3">📋 Bill Summary (Payment Required)</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{(order.totalAmount)}</span>
+                <span className="text-gray-800">₹{order.totalAmount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{(order.deliveryCharges)}</span>
+                <span className="text-gray-800">₹{order.deliveryCharges}</span>
               </div>
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Amount to Pay</span>
-                  <span className="font-bold text-red-600">{(order.grandTotal)}</span>
+                  <span className="font-bold text-red-600">₹{order.grandTotal}</span>
                 </div>
               </div>
             </div>
@@ -492,7 +537,7 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
           {/* Order Summary */}
           <div className="text-center mb-6">
             <p className="text-lg text-yellow-600 font-semibold">Order #{order.orderId}</p>
-            <p className="text-gray-600">Hi {order.deliveryDetails?.firstName} {order.deliveryDetails?.lastName}</p>
+            <p className="text-gray-600">Hi {order.orderType === 'delivery' ? order.deliveryDetails?.firstName : order.dineInDetails?.firstName} {order.orderType === 'delivery' ? order.deliveryDetails?.lastName : order.dineInDetails?.lastName}</p>
             <p className="text-sm text-gray-500">Order placed on {formatDate(order.createdAt)}</p>
           </div>
 
@@ -502,24 +547,24 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-yellow-700">Processing Amount:</span>
-                <span className="text-yellow-800 font-medium">{(paymentDetails?.payment_amount || order.grandTotal)}</span>
+                <span className="text-yellow-800 font-medium">₹{paymentDetails.grandTotal}</span>
               </div>
-              {paymentDetails && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-yellow-700">Transaction ID:</span>
-                    <span className="text-yellow-800 font-medium">{paymentDetails.cf_payment_id}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-yellow-700">Payment Method:</span>
-                    <span className="text-yellow-800 font-medium">{paymentDetails.payment_method?.card?.card_type?.toUpperCase() || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-yellow-700">Processing Time:</span>
-                    <span className="text-yellow-800 font-medium">{formatDate(paymentDetails.created_at)}</span>
-                  </div>
-                </>
-              )}
+              <div className="flex justify-between">
+                <span className="text-yellow-700">Transaction ID:</span>
+                <span className="text-yellow-800 font-medium">{paymentDetails.transactionId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-yellow-700">Order ID:</span>
+                <span className="text-yellow-800 font-medium">{paymentDetails.orderId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-yellow-700">Payment Status:</span>
+                <span className="text-yellow-800 font-medium">{paymentDetails.paymentStatus}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-yellow-700">Processing Since:</span>
+                <span className="text-yellow-800 font-medium">{formatDate(paymentDetails.updatedAt)}</span>
+              </div>
             </div>
           </div>
 
@@ -572,15 +617,15 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
                 <div key={item._id} className="flex justify-between items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity} × {(item.price)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} × ₹{item.price}</p>
                   </div>
-                  <p className="font-semibold text-gray-800">{(item.price * item.quantity)}</p>
+                  <p className="font-semibold text-gray-800">₹{item.price * item.quantity}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Delivery Details */}
+          {/* Delivery/Dine-in Details */}
           {order.orderType === 'delivery' && order.deliveryDetails && (
             <div className="mb-6">
               <h3 className="font-semibold text-gray-800 mb-3">🚚 Delivery Information</h3>
@@ -611,23 +656,45 @@ const PaymentPendingModal = ({ order, paymentDetails }: { order: any; paymentDet
             </div>
           )}
 
+          {/* Dine-in Details */}
+          {order.orderType === 'dinein' && order.dineInDetails && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-800 mb-3">🍽️ Dine-in Information</h3>
+              <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Name:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.firstName} {order.dineInDetails.lastName}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Table Number:</span>
+                    <span className="ml-2 font-medium">{order.dineInDetails.tableNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bill Summary */}
           <div className="bg-yellow-50 rounded-xl p-4 mb-6 border border-yellow-200">
             <h3 className="font-semibold text-gray-800 mb-3">📋 Bill Summary (Awaiting Payment)</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({order.items.length} items)</span>
-                <span className="text-gray-800">{(order.totalAmount)}</span>
+                <span className="text-gray-800">₹{order.totalAmount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery Charges</span>
-                <span className="text-gray-800">{(order.deliveryCharges)}</span>
+                <span className="text-gray-800">₹{order.deliveryCharges}</span>
               </div>
-            
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-gray-800">Processing Amount</span>
-                  <span className="font-bold text-yellow-600">{(order.grandTotal)}</span>
+                  <span className="font-bold text-yellow-600">₹{order.grandTotal}</span>
                 </div>
               </div>
             </div>
