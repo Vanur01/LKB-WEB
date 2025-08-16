@@ -32,6 +32,7 @@ const MenuPage = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -206,7 +207,7 @@ const MenuPage = () => {
           </div>
 
           {/* Filters */}
-          <div className="w-full mb-6 sm:mb-8">
+          <div className="sticky top-20 z-40 -mx-2 sm:-mx-4 lg:-mx-8 px-2 sm:px-4 lg:px-8 py-4 bg-gray-200/70 rounded-lg backdrop-blur-md transition-shadow duration-200 ">
             <div className="flex flex-col gap-4">
               {/* Categories */}
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
@@ -217,67 +218,95 @@ const MenuPage = () => {
                   </span>
                 </div>
                 <div className="flex-1 w-full min-w-0">
-                  {" "}
                   {/* Added min-w-0 to prevent overflow issues */}
                   <div className="relative">
-                    {/* Horizontal scroll container */}
-                    <div className=" flex overflow-x-auto pb-3 hide-scrollbar scroll-smooth">
-                      {" "}
-                      {/* Added scroll-smooth for better UX */}
-                      <div className="ml-5 flex flex-nowrap gap-2 pr-4">
-                        {" "}
-                        {/* Added right padding for last item visibility */}
-                        {categoriesError ? (
-                          // Error state with retry
-                          <div className="flex items-center gap-2">
-                            <div className="px-3 py-1.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
-                              Failed to load categories
-                            </div>
+                    <div className="flex items-center gap-2">
+                      {categoriesError ? (
+                        // Error state with retry
+                        <div className="flex items-center gap-2">
+                          <div className="px-3 py-1.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
+                            Failed to load categories
+                          </div>
+                          <button
+                            onClick={() => window.location.reload()}
+                            className="px-3 py-1.5 rounded-full bg-orange-500 text-white text-xs font-medium hover:bg-orange-600 transition-colors"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      ) : categories.length > 1 ? (
+                        <>
+                          {/* First two categories */}
+                          {categories.slice(0, 2).map((category, index) => (
                             <button
-                              onClick={() => window.location.reload()}
-                              className="px-3 py-1.5 rounded-full bg-orange-500 text-white text-xs font-medium hover:bg-orange-600 transition-colors"
+                              key={`${category}-${index}`}
+                              onClick={() => {
+                                setSelectedCategory(category);
+                                setCurrentPage(1);
+                              }}
+                              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 ${
+                                selectedCategory === category
+                                  ? "bg-orange-500 text-white"
+                                  : "bg-white text-gray-700 hover:border-orange-500 hover:text-orange-500 cursor-pointer border border-gray-200"
+                              }`}
                             >
-                              Retry
+                              {category}
+                              {selectedCategory === category && (
+                                <span className="ml-1">✓</span>
+                              )}
                             </button>
-                          </div>
-                        ) : categories.length > 1 ? (
-                          <>
-                            {/* Category buttons */}
-                            {categories.map((category, index) => (
-                              <button
-                                key={`${category}-${index}`}
-                                onClick={() => {
-                                  setSelectedCategory(category);
-                                  setCurrentPage(1);
-                                }}
-                                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 ${
-                                  selectedCategory === category
-                                    ? "bg-orange-500 text-white "
-                                    : "bg-white text-gray-700 hover:border-orange-500 hover:text-orange-500 cursor-pointer border border-gray-200"
-                                }`}
+                          ))}
+                          
+                          {/* Show selected category if it's not in first 2 */}
+                          {selectedCategory !== "All" &&
+                            !categories.slice(0, 2).includes(selectedCategory) && (
+                            <button
+                              key="selected-category"
+                              onClick={() => {
+                                setSelectedCategory(selectedCategory);
+                                setCurrentPage(1);
+                              }}
+                              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 bg-orange-500 text-white"
+                            >
+                              {selectedCategory}
+                              <span className="ml-1">✓</span>
+                            </button>
+                          )}                          {/* View All Button */}
+                          {categories.length > 2 && (
+                            <button
+                              onClick={() => setIsModalOpen(true)}
+                              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 flex items-center gap-2"
+                            >
+                              <span>View All</span>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                {category}
-                              </button>
-                            ))}
-                          </>
-                        ) : (
-                          // Loading skeleton for categories
-                          <div className="flex gap-2">
-                            {[...Array(5)].map((_, index) => (
-                              <div
-                                key={index}
-                                className="px-4 py-2 rounded-full bg-gray-200 animate-pulse flex-shrink-0"
-                                style={{ width: "80px", height: "32px" }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        // Loading skeleton for categories
+                        <div className="flex gap-2">
+                          {[...Array(4)].map((_, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-2 rounded-full bg-gray-200 animate-pulse flex-shrink-0"
+                              style={{ width: "80px", height: "32px" }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-
-                    {/* Optional gradient fade effect at the ends */}
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-white to-transparent"></div>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-white to-transparent"></div>
                   </div>
                 </div>
               </div>
@@ -309,30 +338,80 @@ const MenuPage = () => {
                   </div>
                 </div>
 
-
                 {(selectedCategory !== "All" ||
-                selectedDiet !== "All" ||
-                selectedAvailability !== "All") && (
-                <div className="flex justify-start">
-                  <button
-                    onClick={() => {
-                      setSelectedCategory("All");
-                      setSelectedDiet("All");
-                      setSelectedAvailability("All");
-                      setCurrentPage(1);
-                    }}
-                    className="px-4 py-2 text-sm text-gray-600 hover:text-orange-500 underline transition-colors duration-200 cursor-pointer"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
+                  selectedDiet !== "All" ||
+                  selectedAvailability !== "All") && (
+                  <div className="flex justify-start">
+                    <button
+                      onClick={() => {
+                        setSelectedCategory("All");
+                        setSelectedDiet("All");
+                        setSelectedAvailability("All");
+                        setCurrentPage(1);
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 hover:text-orange-500 underline transition-colors duration-200 cursor-pointer"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {/* Clear Filters Button */}
-              
             </div>
           </div>
+          {/* Categories Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black/50 bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Select Category
+                  </h3>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-500"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {categories.map((category, index) => (
+                      <button
+                        key={`modal-${category}-${index}`}
+                        onClick={() => {
+                          setSelectedCategory(category);
+                          setCurrentPage(1);
+                          setIsModalOpen(false);
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          selectedCategory === category
+                            ? "bg-orange-500 text-white"
+                            : "bg-white text-gray-700 hover:bg-orange-50 hover:text-orange-500 border border-gray-200"
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Spacer to prevent content jump when filters become fixed */}
+          <div className="h-4 sm:h-6"></div>
 
           {/* Menu Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">

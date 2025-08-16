@@ -343,7 +343,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Contact Information */}
                 <div className="p-6 bg-orange-50">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-orange-500">📞</span> +91 8260061212
+                    <span className="text-orange-500">📞</span> +91 7008203600
                   </h3>
                 </div>
               </div>
