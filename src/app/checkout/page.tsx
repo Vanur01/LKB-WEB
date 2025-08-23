@@ -15,24 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder } from "@/api/Cart/page";
-import { load } from "@cashfreepayments/cashfree-js";
-
-// Type definitions for Cashfree SDK
-interface CashfreeSDK {
-  checkout: (options: CashfreeCheckoutOptions) => Promise<void>;
-}
-
-interface CashfreeCheckoutOptions {
-  paymentSessionId: string;
-  redirectTarget?: "_self" | "_blank";
-}
-
-// Extended response type for order creation with payment session ID
-interface OrderResponseWithPayment {
-  success: boolean;
-  paymentSessionId?: string;
-  [key: string]: any;
-}
+ 
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -47,7 +30,6 @@ const CheckoutPage = () => {
   const [selectedOption, setSelectedOption] = useState("delivery");
   const [currentStep, setCurrentStep] = useState("selection"); // 'selection', 'details'
   const [isLoading, setIsLoading] = useState(true);
-  const [cashfreeInstance, setCashfreeInstance] = useState<CashfreeSDK | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -82,23 +64,6 @@ const CheckoutPage = () => {
     loadCart();
   }, []);
 
-  // Initialize Cashfree SDK
-  useEffect(() => {
-    const initializeCashfree = async () => {
-      try {
-        if (typeof window !== 'undefined') {
-          const cashfree = await load({
-            mode: "production"
-          });
-          setCashfreeInstance(cashfree);
-        }
-      } catch (error) {
-        console.error("Failed to initialize Cashfree SDK:", error);
-      }
-    };
-    
-    initializeCashfree();
-  }, []);
 
   const totalItems = getTotalItems();
   const subtotal = getTotalPrice();
@@ -199,41 +164,23 @@ const CheckoutPage = () => {
       
       if (response && response.success) {
         console.log('Order created successfully:', response);
-        
-        // Check if Cashfree SDK is initialized
-        if (!cashfreeInstance) {
-          console.error('Cashfree SDK not initialized');
-          setValidationErrors({...validationErrors, general: "Payment gateway not available. Please try again later."});
+
+        // Extract PhonePe payment URL from API response (be tolerant of shape)
+        const resultAny = response?.result as any;
+        const paymentUrl = resultAny?.paymentUrl || resultAny?.order?.paymentUrl;
+
+        if (!paymentUrl) {
+          console.error('Payment URL not found in response');
+          setValidationErrors({ ...validationErrors, general: "Payment URL not found. Please try again." });
           setIsLoading(false);
           return;
         }
-        
-        try {
-          // Get the payment session ID from the response
-          // The response structure has the payment session ID in result.order.paymentSessionId
-          
-          // Extract the payment session ID from the nested response structure
-          const paymentSessionId = response?.result?.order?.paymentSessionId
-          
-          console.log('Payment Session ID:', paymentSessionId);
-          
-          // Configure the payment options
-          const checkoutOptions: CashfreeCheckoutOptions = {
-            paymentSessionId: paymentSessionId,
-            redirectTarget: "_self" as "_self", // Open in the same tab
-          };
-          
-          // Initialize the payment
-          console.log('Initializing Cashfree payment with options:', checkoutOptions);
-          await cashfreeInstance.checkout(checkoutOptions);
-          
-          // The user will be redirected to the Cashfree payment page
-          // After payment, Cashfree will redirect back to your configured callback URL
-        } catch (paymentError) {
-          console.error('Payment initialization failed:', paymentError);
-          setValidationErrors({...validationErrors, general: "Failed to initialize payment. Please try again."});
-          setIsLoading(false);
+
+        // Redirect to PhonePe payment page
+        if (typeof window !== 'undefined') {
+          window.location.href = paymentUrl;
         }
+        return;
       } else {
         // Handle error case
         console.error('Failed to create order:', response);

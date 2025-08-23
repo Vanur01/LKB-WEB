@@ -25,7 +25,7 @@ const orderConfirmed = () => {
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
-        const orderId = searchParams.get('order_id');
+        const orderId = searchParams.get('orderId');
 
         if (!orderId) {
           setError('Order ID not found in URL');
@@ -80,12 +80,36 @@ const orderConfirmed = () => {
 
   const { result: order } = orderDetails;
   const { result: statusResult } = orderStatus;
-  
-  // Get the latest payment status from the order status API
-  const latestPaymentStatus = statusResult.paymentStatus;
-  
-  // Render different modals based on payment status
-  return renderPaymentStatusModal(order, latestPaymentStatus, statusResult);
+
+  // Compute a robust payment status from various possible fields
+  const latestPaymentStatus = (() => {
+    const sr: any = statusResult as any;
+    const rawStatus = sr?.paymentStatus || sr?.status || sr?.data?.state || sr?.order?.paymentStatus || order?.paymentStatus;
+    if (!rawStatus) return 'PENDING';
+    const upper = String(rawStatus).toUpperCase();
+    if (upper === 'COMPLETED') return 'SUCCESS';
+    if (['SUCCESS', 'FAILED', 'PENDING'].includes(upper)) return upper;
+    if (['PROCESSING', 'INITIATED'].includes(upper)) return 'PENDING';
+    return 'PENDING';
+  })();
+
+  // Normalize payment details object for UI components
+  const normalizedPaymentDetails = (() => {
+    const sr: any = statusResult as any;
+    const firstPayment = sr?.data?.paymentDetails?.[0] || {};
+    return {
+      grandTotal: order.grandTotal,
+      transactionId: firstPayment.transactionId || sr?.transactionId || order?.transactionId,
+      paymentStatus: latestPaymentStatus,
+      orderId: order.orderId,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      status: order.status,
+    };
+  })();
+
+  // Render different modals based on computed payment status
+  return renderPaymentStatusModal(order, latestPaymentStatus, normalizedPaymentDetails);
 };
 
 // Payment Success Modal Component

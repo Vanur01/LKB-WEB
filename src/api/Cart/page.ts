@@ -224,6 +224,7 @@ export interface OrderResponse {
   statusCode: number;
   message: string;
   result: {
+    paymentUrl?: string; // PhonePe redirect URL may be present at root
     order: {
       items: {
         menuId: string;
@@ -247,10 +248,13 @@ export interface OrderResponse {
       updatedAt: string;
       __v: number;
       orderId: string;
-      paymentSessionId: string;
-      transactionId: string;
-      returnUrl: string;
-      notifyUrl: string;
+      // Cashfree legacy fields (kept optional for backward compatibility)
+      paymentSessionId?: string;
+      transactionId?: string;
+      returnUrl?: string;
+      notifyUrl?: string;
+      // PhonePe redirect URL may also be nested here
+      paymentUrl?: string;
     }
   };
 }
