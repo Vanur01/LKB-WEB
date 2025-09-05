@@ -15,7 +15,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder } from "@/api/Cart/page";
- 
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -25,10 +24,10 @@ const CheckoutPage = () => {
     getTotalItems,
     getTotalPrice,
     isLoading: cartLoading,
-    cartSummary
+    cartSummary,
   } = useCart();
   const [selectedOption, setSelectedOption] = useState("delivery");
-  const [currentStep, setCurrentStep] = useState("selection"); // 'selection', 'details'
+  const [currentStep, setCurrentStep] = useState("selection");
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -42,12 +41,12 @@ const CheckoutPage = () => {
   const [validationErrors, setValidationErrors] = useState({
     general: "",
     firstName: false,
-    lastName: false, 
+    lastName: false,
     hostel: false,
     roomNumber: false,
     floor: false,
     phoneNumber: false,
-    tableNumber: false
+    tableNumber: false,
   });
 
   // Fixed values for charges and tax
@@ -63,7 +62,6 @@ const CheckoutPage = () => {
 
     loadCart();
   }, []);
-
 
   const totalItems = getTotalItems();
   const subtotal = getTotalPrice();
@@ -89,7 +87,7 @@ const CheckoutPage = () => {
     try {
       // Show loading state
       setIsLoading(true);
-      
+
       // Reset previous validation errors
       const newValidationErrors = {
         general: "",
@@ -99,99 +97,205 @@ const CheckoutPage = () => {
         roomNumber: false,
         floor: false,
         phoneNumber: false,
-        tableNumber: false
+        tableNumber: false,
       };
-      
+
       let hasErrors = false;
-      
-      // Validate form data
+
+      // Validate form data based on order type
       if (selectedOption === "delivery") {
-        if (!formData.firstName) { newValidationErrors.firstName = true; hasErrors = true; }
-        if (!formData.lastName) { newValidationErrors.lastName = true; hasErrors = true; }
-        if (!formData.hostel) { newValidationErrors.hostel = true; hasErrors = true; }
-        if (!formData.roomNumber) { newValidationErrors.roomNumber = true; hasErrors = true; }
-        if (!formData.floor) { newValidationErrors.floor = true; hasErrors = true; }
-        if (!formData.phoneNumber) { newValidationErrors.phoneNumber = true; hasErrors = true; }
-        
-        if (hasErrors) {
-          newValidationErrors.general = "Please fill in all required fields";
-          setValidationErrors(newValidationErrors);
-          setIsLoading(false);
-          return;
+        // Delivery validation - all fields required
+        if (!formData.firstName.trim()) {
+          newValidationErrors.firstName = true;
+          hasErrors = true;
+        }
+        if (!formData.lastName.trim()) {
+          newValidationErrors.lastName = true;
+          hasErrors = true;
+        }
+        if (!formData.hostel.trim()) {
+          newValidationErrors.hostel = true;
+          hasErrors = true;
+        }
+        if (!formData.roomNumber.trim()) {
+          newValidationErrors.roomNumber = true;
+          hasErrors = true;
+        }
+        if (!formData.floor.trim()) {
+          newValidationErrors.floor = true;
+          hasErrors = true;
+        }
+        if (!formData.phoneNumber.trim()) {
+          newValidationErrors.phoneNumber = true;
+          hasErrors = true;
+        }
+
+        // Phone number format validation (10 digits)
+        if (
+          formData.phoneNumber.trim() &&
+          !/^\d{10}$/.test(formData.phoneNumber.trim())
+        ) {
+          newValidationErrors.phoneNumber = true;
+          newValidationErrors.general =
+            "Please enter a valid 10-digit phone number";
+          hasErrors = true;
         }
       } else {
-        // Dinein validation
-        if (!formData.firstName) { newValidationErrors.firstName = true; hasErrors = true; }
-        if (!formData.lastName) { newValidationErrors.lastName = true; hasErrors = true; }
-        if (!formData.tableNumber) { newValidationErrors.tableNumber = true; hasErrors = true; }
-        if (!formData.phoneNumber) { newValidationErrors.phoneNumber = true; hasErrors = true; }
-        
-        if (hasErrors) {
-          newValidationErrors.general = "Please fill in all required fields";
-          setValidationErrors(newValidationErrors);
-          setIsLoading(false);
-          return;
+        // Dine-in validation
+        if (!formData.firstName.trim()) {
+          newValidationErrors.firstName = true;
+          hasErrors = true;
+        }
+        if (!formData.lastName.trim()) {
+          newValidationErrors.lastName = true;
+          hasErrors = true;
+        }
+        if (!formData.tableNumber.trim()) {
+          newValidationErrors.tableNumber = true;
+          hasErrors = true;
+        }
+        if (!formData.phoneNumber.trim()) {
+          newValidationErrors.phoneNumber = true;
+          hasErrors = true;
+        }
+
+        // Phone number format validation (10 digits)
+        if (
+          formData.phoneNumber.trim() &&
+          !/^\d{10}$/.test(formData.phoneNumber.trim())
+        ) {
+          newValidationErrors.phoneNumber = true;
+          newValidationErrors.general =
+            "Please enter a valid 10-digit phone number";
+          hasErrors = true;
         }
       }
-      
+
+      // If validation fails, show error and stop
+      if (hasErrors) {
+        if (!newValidationErrors.general) {
+          newValidationErrors.general = "Please fill in all required fields";
+        }
+        setValidationErrors(newValidationErrors);
+        setIsLoading(false);
+        return;
+      }
+
+      // If we reached here, validation passed
       // Prepare order details based on selected option
       const orderType = selectedOption === "delivery" ? "delivery" : "dinein";
-      
+
       let orderDetails;
-      
+
       if (orderType === "delivery") {
         orderDetails = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          hostel: formData.hostel,
-          roomNumber: formData.roomNumber,
-          floor: formData.floor,
-          phone: formData.phoneNumber
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          hostel: formData.hostel.trim(),
+          roomNumber: formData.roomNumber.trim(),
+          floor: formData.floor.trim(),
+          phone: formData.phoneNumber.trim(),
         };
       } else {
         orderDetails = {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          tableNumber: formData.tableNumber,
-          phone: formData.phoneNumber
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          tableNumber: formData.tableNumber.trim(),
+          phone: formData.phoneNumber.trim(),
         };
       }
-      
-      console.log('Submitting order:', orderType, orderDetails);
-      
-      // Call the API to create the order
-      const response = await createOrder(orderType as 'delivery' | 'dinein', orderDetails);
-      
-      if (response && response.success) {
-        console.log('Order created successfully:', response);
 
-        // Extract PhonePe payment URL from API response (be tolerant of shape)
-        const resultAny = response?.result as any;
-        const paymentUrl = resultAny?.paymentUrl || resultAny?.order?.paymentUrl;
+      console.log(
+        "Validation passed. Submitting order:",
+        orderType,
+        orderDetails
+      );
+
+      // Call the API to create the order
+      const response = await createOrder(
+        orderType as "delivery" | "dinein",
+        orderDetails
+      );
+
+      if (response && response.success) {
+        console.log("Order created successfully:", response);
+
+        // Extract PhonePe payment URL from API response
+        // The API provides paymentUrl at both result.paymentUrl and result.order.paymentUrl
+        const paymentUrl =
+          response.result?.paymentUrl || response.result?.order?.paymentUrl;
 
         if (!paymentUrl) {
-          console.error('Payment URL not found in response');
-          setValidationErrors({ ...validationErrors, general: "Payment URL not found. Please try again." });
+          console.error("Payment URL not found in response");
+          setValidationErrors({
+            ...validationErrors,
+            general: "Payment URL not found. Please try again.",
+          });
           setIsLoading(false);
           return;
         }
 
         // Redirect to PhonePe payment page
-        if (typeof window !== 'undefined') {
-          window.location.href = paymentUrl;
-        }
+        // if (paymentUrl) {
+        //   window.location.href = paymentUrl;
+        //   console.log('Redirecting to payment URL:', paymentUrl);
+        // }
+        const link = document.createElement("a");
+        link.href = paymentUrl;
+        link.target = "_self"; // open in same tab
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
         return;
       } else {
         // Handle error case
-        console.error('Failed to create order:', response);
-        setValidationErrors({...validationErrors, general: "Failed to create order. Please try again."});
+        console.error("Failed to create order:", response);
+        setValidationErrors({
+          ...validationErrors,
+          general: "Failed to create order. Please try again.",
+        });
         setIsLoading(false);
       }
     } catch (error) {
       console.error("Error creating order:", error);
-      setValidationErrors({...validationErrors, general: "An error occurred while creating your order."});
+      setValidationErrors({
+        ...validationErrors,
+        general:
+          "An error occurred while creating your order. Please try again.",
+      });
       setIsLoading(false);
+    } finally {
+      // Ensure loading state is reset even if there are unexpected errors
+      if (isLoading) {
+        setIsLoading(false);
+      }
     }
+  };
+
+  const redirectToPayment = (
+    paymentUrl: string,
+    params: Record<string, string>
+  ) => {
+    // Create a form dynamically
+    const form = document.createElement("form");
+    form.method = "POST"; // 🔹 POST is required by PhonePe
+    form.action = paymentUrl;
+    form.style.display = "none"; // Keep it hidden
+
+    // Add params as hidden inputs
+    for (const [key, value] of Object.entries(params)) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit(); // 🔹 Auto-submit the form
+    document.body.removeChild(form); // Clean up
   };
 
   const containerVariants = {
@@ -389,26 +493,30 @@ const CheckoutPage = () => {
                         >
                           <span>Subtotal ({totalItems} items)</span>
                           <span className="font-medium">
-                            ₹{cartSummary ? cartSummary.totalPrice : subtotal.toFixed(2)}
+                            ₹
+                            {cartSummary
+                              ? cartSummary.totalPrice
+                              : subtotal.toFixed(2)}
                           </span>
                         </motion.div>
 
                         {/* Delivery Fee */}
                         {selectedOption === "delivery" && (
-
-                        <motion.div
-                          className="flex justify-between text-sm sm:text-base text-zinc-600"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          <span>Delivery Charges</span>
-                          <span className="font-medium">
-                            ₹{cartSummary ? cartSummary.deliveryCharge : deliveryCharges.toFixed(2)}
-                          </span>
-                        </motion.div> 
+                          <motion.div
+                            className="flex justify-between text-sm sm:text-base text-zinc-600"
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <span>Delivery Charges</span>
+                            <span className="font-medium">
+                              ₹
+                              {cartSummary
+                                ? cartSummary.deliveryCharge
+                                : deliveryCharges.toFixed(2)}
+                            </span>
+                          </motion.div>
                         )}
-                     
                       </div>
                     </motion.div>
                   </div>
@@ -439,10 +547,19 @@ const CheckoutPage = () => {
                           stiffness: 200,
                         }}
                       >
-                        ₹{(() => {
-                          const subtotal = cartSummary ? parseFloat(cartSummary.totalPrice.toString()) : getTotalPrice();
-                          const delivery = selectedOption === "delivery" ? 
-                            (cartSummary ? parseFloat(cartSummary.deliveryCharge.toString()) : deliveryCharges) : 0;
+                        ₹
+                        {(() => {
+                          const subtotal = cartSummary
+                            ? parseFloat(cartSummary.totalPrice.toString())
+                            : getTotalPrice();
+                          const delivery =
+                            selectedOption === "delivery"
+                              ? cartSummary
+                                ? parseFloat(
+                                    cartSummary.deliveryCharge.toString()
+                                  )
+                                : deliveryCharges
+                              : 0;
                           return (subtotal + delivery).toFixed(2);
                         })()}
                       </motion.span>
@@ -635,8 +752,17 @@ const CheckoutPage = () => {
                       {validationErrors.general && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                           <p className="text-red-600 text-sm flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 mr-2 flex-shrink-0"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {validationErrors.general}
                           </p>
@@ -656,12 +782,22 @@ const CheckoutPage = () => {
                               value={formData.firstName}
                               onChange={(e) => {
                                 handleInputChange("firstName", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, firstName: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    firstName: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.firstName ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.firstName
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.firstName && (
-                              <p className="mt-1 text-sm text-red-600">First name is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                First name is required
+                              </p>
                             )}
                           </div>
                           <div>
@@ -674,12 +810,22 @@ const CheckoutPage = () => {
                               value={formData.lastName}
                               onChange={(e) => {
                                 handleInputChange("lastName", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, lastName: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    lastName: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.lastName ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.lastName
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.lastName && (
-                              <p className="mt-1 text-sm text-red-600">Last name is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                Last name is required
+                              </p>
                             )}
                           </div>
                         </div>
@@ -696,12 +842,22 @@ const CheckoutPage = () => {
                               value={formData.hostel}
                               onChange={(e) => {
                                 handleInputChange("hostel", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, hostel: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    hostel: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.hostel ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.hostel
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.hostel && (
-                              <p className="mt-1 text-sm text-red-600">Hostel name is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                Hostel name is required
+                              </p>
                             )}
                           </div>
                         </div>
@@ -718,12 +874,22 @@ const CheckoutPage = () => {
                               value={formData.roomNumber}
                               onChange={(e) => {
                                 handleInputChange("roomNumber", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, roomNumber: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    roomNumber: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.roomNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.roomNumber
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.roomNumber && (
-                              <p className="mt-1 text-sm text-red-600">Room number is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                Room number is required
+                              </p>
                             )}
                           </div>
                           <div>
@@ -736,49 +902,63 @@ const CheckoutPage = () => {
                               value={formData.floor}
                               onChange={(e) => {
                                 handleInputChange("floor", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, floor: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    floor: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.floor ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.floor
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.floor && (
-                              <p className="mt-1 text-sm text-red-600">Floor is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                Floor is required
+                              </p>
                             )}
                           </div>
                         </div>
 
                         {/* Phone Number */}
-                       <div>
-  <label className="block text-sm font-medium text-zinc-700 mb-2">
-    Phone Number *
-  </label>
-  <input
-    type="tel"
-    placeholder="Enter 10-digit number (e.g., 1234567890)"
-    value={formData.phoneNumber}
-    onChange={(e) => {
-      // Strip all non-digits and limit to 10 characters
-      const rawValue = e.target.value.replace(/\D/g, '').slice(0, 10);
-      handleInputChange("phoneNumber", rawValue);
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 mb-2">
+                            Phone Number *
+                          </label>
+                          <input
+                            type="tel"
+                            placeholder="Enter 10-digit number (e.g., 1234567890)"
+                            value={formData.phoneNumber}
+                            onChange={(e) => {
+                              // Strip all non-digits and limit to 10 characters
+                              const rawValue = e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 10);
+                              handleInputChange("phoneNumber", rawValue);
 
-      // Validate (exactly 10 digits)
-      const isValid = rawValue.length === 10;
-      setValidationErrors({
-        ...validationErrors,
-        phoneNumber: !isValid,
-      });
-    }}
-    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
-      validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'
-    } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
-  />
-  {validationErrors.phoneNumber && (
-    <p className="mt-1 text-sm text-red-600">
-      {!formData.phoneNumber
-        ? "Phone number is required"
-        : "Must be exactly 10 digits (no symbols)"}
-    </p>
-  )}
-</div>
+                              // Validate (exactly 10 digits)
+                              const isValid = rawValue.length === 10;
+                              setValidationErrors({
+                                ...validationErrors,
+                                phoneNumber: !isValid,
+                              });
+                            }}
+                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                              validationErrors.phoneNumber
+                                ? "border-red-500 bg-red-50"
+                                : "border-zinc-300"
+                            } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                          />
+                          {validationErrors.phoneNumber && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {!formData.phoneNumber
+                                ? "Phone number is required"
+                                : "Must be exactly 10 digits (no symbols)"}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -828,8 +1008,17 @@ const CheckoutPage = () => {
                       {validationErrors.general && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                           <p className="text-red-600 text-sm flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 mr-2 flex-shrink-0"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                             {validationErrors.general}
                           </p>
@@ -849,12 +1038,22 @@ const CheckoutPage = () => {
                               value={formData.firstName}
                               onChange={(e) => {
                                 handleInputChange("firstName", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, firstName: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    firstName: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.firstName ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.firstName
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.firstName && (
-                              <p className="mt-1 text-sm text-red-600">First name is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                First name is required
+                              </p>
                             )}
                           </div>
                           <div>
@@ -867,48 +1066,64 @@ const CheckoutPage = () => {
                               value={formData.lastName}
                               onChange={(e) => {
                                 handleInputChange("lastName", e.target.value);
-                                if (e.target.value) setValidationErrors({...validationErrors, lastName: false});
+                                if (e.target.value)
+                                  setValidationErrors({
+                                    ...validationErrors,
+                                    lastName: false,
+                                  });
                               }}
-                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.lastName ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                                validationErrors.lastName
+                                  ? "border-red-500 bg-red-50"
+                                  : "border-zinc-300"
+                              } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                             />
                             {validationErrors.lastName && (
-                              <p className="mt-1 text-sm text-red-600">Last name is required</p>
+                              <p className="mt-1 text-sm text-red-600">
+                                Last name is required
+                              </p>
                             )}
                           </div>
                         </div>
 
                         {/* Phone Number */}
-                       <div>
-  <label className="block text-sm font-medium text-zinc-700 mb-2">
-    Phone Number *
-  </label>
-  <input
-    type="tel"
-    placeholder="Enter 10-digit phone number"
-    value={formData.phoneNumber}
-    onChange={(e) => {
-      // Only allow digits and limit to 10 characters
-      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-      handleInputChange("phoneNumber", value);
-      
-      // Validate exactly 10 digits
-      const isValid = value.length === 10;
-      
-      setValidationErrors({
-        ...validationErrors, 
-        phoneNumber: !isValid
-      });
-    }}
-    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
-      validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'
-    } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
-  />
-  {validationErrors.phoneNumber && (
-    <p className="mt-1 text-sm text-red-600">
-      {formData.phoneNumber ? 'Please enter exactly 10 digits' : 'Phone number is required'}
-    </p>
-  )}
-</div>
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 mb-2">
+                            Phone Number *
+                          </label>
+                          <input
+                            type="tel"
+                            placeholder="Enter 10-digit phone number"
+                            value={formData.phoneNumber}
+                            onChange={(e) => {
+                              // Only allow digits and limit to 10 characters
+                              const value = e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 10);
+                              handleInputChange("phoneNumber", value);
+
+                              // Validate exactly 10 digits
+                              const isValid = value.length === 10;
+
+                              setValidationErrors({
+                                ...validationErrors,
+                                phoneNumber: !isValid,
+                              });
+                            }}
+                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                              validationErrors.phoneNumber
+                                ? "border-red-500 bg-red-50"
+                                : "border-zinc-300"
+                            } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                          />
+                          {validationErrors.phoneNumber && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {formData.phoneNumber
+                                ? "Please enter exactly 10 digits"
+                                : "Phone number is required"}
+                            </p>
+                          )}
+                        </div>
 
                         {/* Table Number */}
                         <div>
@@ -921,12 +1136,22 @@ const CheckoutPage = () => {
                             value={formData.tableNumber}
                             onChange={(e) => {
                               handleInputChange("tableNumber", e.target.value);
-                              if (e.target.value) setValidationErrors({...validationErrors, tableNumber: false});
+                              if (e.target.value)
+                                setValidationErrors({
+                                  ...validationErrors,
+                                  tableNumber: false,
+                                });
                             }}
-                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${validationErrors.tableNumber ? 'border-red-500 bg-red-50' : 'border-zinc-300'} rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
+                            className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
+                              validationErrors.tableNumber
+                                ? "border-red-500 bg-red-50"
+                                : "border-zinc-300"
+                            } rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all`}
                           />
                           {validationErrors.tableNumber && (
-                            <p className="mt-1 text-sm text-red-600">Table number is required</p>
+                            <p className="mt-1 text-sm text-red-600">
+                              Table number is required
+                            </p>
                           )}
                         </div>
                       </div>
@@ -945,7 +1170,7 @@ const CheckoutPage = () => {
                 >
                   Proceed to Checkout
                 </motion.button>
-                
+
                 <motion.button
                   className="w-full bg-white border border-orange-500 text-orange-600 hover:bg-orange-50 font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 text-base sm:text-lg cursor-pointer"
                   whileTap={{ scale: 0.98 }}
