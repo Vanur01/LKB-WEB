@@ -63,6 +63,24 @@ const CheckoutPage = () => {
     loadCart();
   }, []);
 
+  // Auto-fill table number from localStorage when Dine In is selected
+  useEffect(() => {
+    if (selectedOption === "dinein" && typeof window !== "undefined") {
+      const storedTableNumber = localStorage.getItem("tableNumber");
+      if (storedTableNumber) {
+        setFormData(prev => ({
+          ...prev,
+          tableNumber: storedTableNumber
+        }));
+        // Clear any validation error for table number
+        setValidationErrors(prev => ({
+          ...prev,
+          tableNumber: false
+        }));
+      }
+    }
+  }, [selectedOption]);
+
   const totalItems = getTotalItems();
   const subtotal = getTotalPrice();
 
