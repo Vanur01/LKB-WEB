@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { fetchHomeDashboard, TopSellingItem } from "@/api/Home/page";
+import { fetchHomeDashboard, TopSellingItem, getAllBanners, OfferBanner } from "@/api/Home/page";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
@@ -23,7 +23,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [topSellingItems, setTopSellingItems] = useState<TopSellingItem[]>([]);
+  const [banners, setBanners] = useState<OfferBanner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,14 +31,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchHomeDashboard("weekly");
-        if (data.success && data.result?.topSellingItems) {
-          setTopSellingItems(data.result.topSellingItems);
+        const data = await getAllBanners();
+        if (data.success && data.result) {
+          setBanners(data.result);
         } else {
-          setTopSellingItems([]);
+          setBanners([]);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to load popular items");
+        setError(err.message || "Failed to load offers");
       } finally {
         setIsLoading(false);
       }
@@ -542,69 +542,53 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
               <div className="mt-4 space-y-4">
                 <h3 className="text-xl sm:text-2xl font-semibold text-gray-800">
-                  Most Ordered This Week
+                  Special Offers
                 </h3>
 
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {isLoading ? (
-                    [...Array(5)].map((_, index) => (
+                    [...Array(3)].map((_, index) => (
                       <div
                         key={index}
-                        className="min-w-[11rem] sm:min-w-[15rem] rounded-xl bg-white border border-dashed p-4 flex-shrink-0 animate-pulse"
+                        className="min-w-[18rem] sm:min-w-[20rem] rounded-xl bg-white border border-dashed p-4 flex-shrink-0 animate-pulse"
                       >
-                        <div className="flex flex-col sm:flex-row gap-5 justify-between items-center">
-                          <div className="bg-gray-200 rounded-lg mb-3 w-full h-24"></div>
-                          <div className="flex flex-col flex-grow w-full">
-                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
-                            <div className="h-4 bg-gray-200 rounded w-1/4 mt-2"></div>
-                          </div>
-                        </div>
+                        <div className="bg-gray-200 rounded-lg w-full h-32 mb-3"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                       </div>
                     ))
                   ) : error ? (
                     <div className="w-full text-center py-4 text-red-500">
                       {error}
                     </div>
-                  ) : topSellingItems.length > 0 ? (
-                    topSellingItems.map((item, index) => (
+                  ) : banners.length > 0 ? (
+                    banners.map((banner, index) => (
                       <div
-                        key={item.menuDetails._id}
-                        className="min-w-[11rem] sm:min-w-[15rem] rounded-xl bg-white border border-dashed p-3 flex-shrink-0"
+                        key={banner._id}
+                        className="min-w-[18rem] sm:min-w-[20rem] rounded-xl bg-white border border-dashed p-4 flex-shrink-0 hover:shadow-lg transition-shadow duration-300"
                       >
-                        <div className="flex flex-col sm:flex-row gap-5 justify-between items-center">
-                          <div className="relative bg-gray-50 rounded-lg mb-1 flex items-center justify-center">
-                            <Image
-                              src={
-                                item.menuDetails.image || "/images/burger.png"
-                              }
-                              alt={item.menuDetails.name}
-                              width={80}
-                              height={80}
-                              className="w-40 h-30 rounded-md object-cover"
-                              unoptimized={true}
-                            />
-                            <span className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                              Hot
-                            </span>
+                        <div className="relative">
+                          <Image
+                            src={banner.imageUrl}
+                            alt={`Offer ${index + 1}`}
+                            width={300}
+                            height={150}
+                            className="w-full h-32 rounded-lg object-cover"
+                            unoptimized={true}
+                          />
+                          <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            Special Offer
                           </div>
-                          <div className="flex flex-col flex-grow">
-                            <h4 className="text-md font-bold text-gray-800 mb-1">
-                              {item.menuDetails.name}
-                            </h4>
-                            <p className="text-xs text-gray-500 mb-2">{`${item.thisWeek.quantity} orders this week`}</p>
-                            <div className="mt-auto flex items-center justify-between">
-                              <p className="text-sm font-semibold text-gray-800">
-                                ₹{item.menuDetails.price}
-                              </p>
-                            </div>
-                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-sm text-gray-500">
+                            Added on {new Date(banner.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="w-full text-center py-4 text-gray-500">
-                      No popular items found this week
+                      No special offers available right now
                     </div>
                   )}
                 </div>

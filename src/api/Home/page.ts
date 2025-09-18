@@ -48,6 +48,21 @@ export interface DashboardResponse {
   };
 }
 
+export interface OfferBanner {
+  _id: string;
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface BannerResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  result: OfferBanner[];
+}
+
 export const fetchHomeDashboard = async (range: 'today' | 'weekly' | 'monthly' = 'weekly'): Promise<DashboardResponse> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/dashboard/RevenueDashboard`, {
@@ -62,6 +77,22 @@ export const fetchHomeDashboard = async (range: 'today' | 'weekly' | 'monthly' =
       );
     } else {
       throw new Error("An unknown error occurred while fetching dashboard data");
+    }
+  }
+};
+
+export const getAllBanners = async (): Promise<BannerResponse> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/offerBanner/getAll`);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message ||
+          "An error occurred while fetching offer banners"
+      );
+    } else {
+      throw new Error("An unknown error occurred while fetching offer banners");
     }
   }
 };
