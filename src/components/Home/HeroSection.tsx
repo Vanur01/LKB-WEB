@@ -10,6 +10,7 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import OfferBannerModal from "./OfferBannerModal";
 
 interface HeroSectionProps {
   cartCount?: number;
@@ -26,6 +27,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const [banners, setBanners] = useState<OfferBanner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,6 +36,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         const data = await getAllBanners();
         if (data.success && data.result) {
           setBanners(data.result);
+          // Show modal if there are banners - display on every visit
+          if (data.result.length > 0) {
+            // Show the modal after a short delay on every visit
+            setTimeout(() => {
+              setShowOfferModal(true);
+            }, 1000); // Show after 1.5 second delay
+          }
         } else {
           setBanners([]);
         }
@@ -48,6 +57,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeOfferModal = () => {
+    setShowOfferModal(false);
   };
 
   // Container animation variants
@@ -175,6 +188,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <div className="min-h-screen bg-zinc-100 overflow-hidden flex flex-col">
+      {/* Offer Banner Modal */}
+      <OfferBannerModal
+        banners={banners}
+        isOpen={showOfferModal}
+        onClose={closeOfferModal}
+      />
+
       {/* Header/Navbar */}
       <header className="bg-transparent sticky top-0 z-40 w-full">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">

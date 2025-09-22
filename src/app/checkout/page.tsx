@@ -26,7 +26,7 @@ const CheckoutPage = () => {
     isLoading: cartLoading,
     cartSummary,
   } = useCart();
-  const [selectedOption, setSelectedOption] = useState("delivery");
+  const [selectedOption, setSelectedOption] = useState("dinein");
   const [currentStep, setCurrentStep] = useState("selection");
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
