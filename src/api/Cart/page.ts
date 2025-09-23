@@ -304,4 +304,41 @@ export const createOrder = async (
   }
 };
 
+// Delivery Settings API interfaces
+export interface DeliverySettingsResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  result: {
+    _id: string;
+    isDeliveryEnabled: boolean;
+    __v: number;
+  };
+}
+
+// Get delivery settings
+export const getDeliverySettings = async (): Promise<DeliverySettingsResponse | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/getDeliverySettings`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error('Failed to fetch delivery settings with status:', response.status);
+      console.error('Error response:', data);
+      throw new Error(`Failed to fetch delivery settings: ${data.message || 'Unknown error'}`);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching delivery settings:', error);
+    return null;
+  }
+};
+
 

@@ -14,7 +14,7 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useCart } from "@/contexts/CartContext";
-import { createOrder } from "@/api/Cart/page";
+import { createOrder, getDeliverySettings } from "@/api/Cart/page";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -29,6 +29,8 @@ const CheckoutPage = () => {
   const [selectedOption, setSelectedOption] = useState("dinein");
   const [currentStep, setCurrentStep] = useState("selection");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeliveryEnabled, setIsDeliveryEnabled] = useState(false);
+  const [deliverySettingsLoading, setDeliverySettingsLoading] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -63,6 +65,43 @@ const CheckoutPage = () => {
     loadCart();
   }, []);
 
+  // Fetch delivery settings when component mounts
+  useEffect(() => {
+    const fetchDeliverySettings = async () => {
+      try {
+        setDeliverySettingsLoading(true);
+        const response = await getDeliverySettings();
+        
+        if (response && response.success) {
+          setIsDeliveryEnabled(response.result.isDeliveryEnabled);
+          console.log("Delivery enabled:", response.result.isDeliveryEnabled);
+          
+          // If delivery is disabled and currently selected, switch to dine-in
+          if (!response.result.isDeliveryEnabled && selectedOption === "delivery") {
+            setSelectedOption("dinein");
+          }
+        } else {
+          console.error("Failed to fetch delivery settings");
+          // Default to false if API fails
+          setIsDeliveryEnabled(false);
+          if (selectedOption === "delivery") {
+            setSelectedOption("dinein");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching delivery settings:", error);
+        setIsDeliveryEnabled(false);
+        if (selectedOption === "delivery") {
+          setSelectedOption("dinein");
+        }
+      } finally {
+        setDeliverySettingsLoading(false);
+      }
+    };
+
+    fetchDeliverySettings();
+  }, []);
+
   // Auto-fill table number from localStorage when Dine In is selected
   useEffect(() => {
     if (selectedOption === "dinein" && typeof window !== "undefined") {
@@ -94,6 +133,11 @@ const CheckoutPage = () => {
   };
 
   const handleContinue = () => {
+    // Prevent continuing to delivery if delivery is disabled
+    if (selectedOption === "delivery" && !isDeliveryEnabled) {
+      alert("Delivery service is currently unavailable. Please choose dine-in option.");
+      return;
+    }
     setCurrentStep("details");
   };
 
@@ -105,6 +149,22 @@ const CheckoutPage = () => {
     try {
       // Show loading state
       setIsLoading(true);
+
+      // Check if delivery is selected but not enabled
+      if (selectedOption === "delivery" && !isDeliveryEnabled) {
+        setValidationErrors({
+          general: "Delivery service is currently unavailable. Please choose dine-in option.",
+          firstName: false,
+          lastName: false,
+          hostel: false,
+          roomNumber: false,
+          floor: false,
+          phoneNumber: false,
+          tableNumber: false,
+        });
+        setIsLoading(false);
+        return;
+      }
 
       // Reset previous validation errors
       const newValidationErrors = {
@@ -591,19 +651,38 @@ const CheckoutPage = () => {
                 className="space-y-3 sm:space-y-4"
                 variants={itemVariants}
               >
-                {/* Delivery Option */}
-                <motion.div
-                  className={`bg-white rounded-xl p-4 sm:p-6 cursor-pointer border transition-all duration-300 ${
-                    selectedOption === "delivery"
-                      ? "border-orange-500 bg-orange-50"
-                      : "border-zinc-200 hover:border-zinc-300"
-                  }`}
-                  variants={cardVariants}
-                  animate={
-                    selectedOption === "delivery" ? "selected" : "unselected"
-                  }
-                  onClick={() => setSelectedOption("delivery")}
-                >
+                {/* Loading state for delivery settings */}
+                {deliverySettingsLoading && (
+                  <motion.div
+                    className="bg-white rounded-xl p-4 sm:p-6 border border-zinc-200"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-zinc-100 animate-pulse flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-zinc-200 rounded animate-pulse mb-2"></div>
+                        <div className="h-3 bg-zinc-200 rounded animate-pulse w-3/4"></div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Delivery Option - Only show if delivery is enabled */}
+                {!deliverySettingsLoading && isDeliveryEnabled && (
+                  <motion.div
+                    className={`bg-white rounded-xl p-4 sm:p-6 cursor-pointer border transition-all duration-300 ${
+                      selectedOption === "delivery"
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-zinc-200 hover:border-zinc-300"
+                    }`}
+                    variants={cardVariants}
+                    animate={
+                      selectedOption === "delivery" ? "selected" : "unselected"
+                    }
+                    onClick={() => setSelectedOption("delivery")}
+                  >
                   <div className="flex items-start space-x-3 sm:space-x-4">
                     <motion.div
                       className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0 ${
@@ -661,6 +740,31 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                 </motion.div>
+                )}
+
+                {/* Delivery Disabled Message */}
+                {!deliverySettingsLoading && !isDeliveryEnabled && (
+                  <motion.div
+                    className="bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-200"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <div className="flex items-start space-x-3 sm:space-x-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <TruckIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-600 mb-2">
+                          Delivery Currently Unavailable
+                        </h3>
+                        <p className="text-gray-500 text-sm sm:text-base">
+                          Delivery service is temporarily disabled. Please choose dine-in option to enjoy our delicious food.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Dine In Option */}
                 <motion.div
