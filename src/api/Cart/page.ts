@@ -29,6 +29,7 @@ export interface MenuItem {
   isVeg: boolean;
   image: string;
   isAvailable: boolean;
+  packagingCost?: number;
 }
 
 export interface CartItemResponse {
@@ -198,6 +199,7 @@ export const convertApiCartToUiCart = (apiResponse: GetCartResponse | null) => {
       isVeg: menuId.isVeg || false,
       category: menuId.category || '',
       quantity: item.quantity || 0,
+      packagingCost: menuId.packagingCost || 0, // Add packaging cost
     };
   });
 };

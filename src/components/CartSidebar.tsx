@@ -20,6 +20,7 @@ interface MenuItem {
 
 interface CartItem extends MenuItem {
   quantity: number;
+  packagingCost?: number;
 }
 
 interface CartSummary {
@@ -27,6 +28,7 @@ interface CartSummary {
   gst: string;
   deliveryCharge: string;
   totalWithExtras: string;
+  packagingCost?: string;
 }
 
 interface CartSidebarProps {

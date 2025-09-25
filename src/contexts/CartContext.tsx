@@ -22,6 +22,7 @@ interface MenuItem {
 interface CartItem extends MenuItem {
   quantity: number;
   originalId: string; // Original MongoDB ID for API calls
+  packagingCost?: number; // Packaging cost per item
 }
 
 interface CartSummary {
@@ -29,6 +30,7 @@ interface CartSummary {
   gst: string;
   deliveryCharge: string;
   totalWithExtras: string;
+  packagingCost?: string;
 }
 
 interface CartContextType {
@@ -68,17 +70,29 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     totalPrice: "0.00",
     gst: "0.00",
     deliveryCharge: "0.00",
-    totalWithExtras: "0.00"
+    totalWithExtras: "0.00",
+    packagingCost: "0.00"
   });
   
   // Helper function to update cart summary from API response
   const updateCartSummaryFromResponse = (cartData: any) => {
     if (cartData && cartData.result) {
+      // Calculate packaging cost from cart items
+      let packagingCost = "0.00";
+      if (cartData.result.cart && cartData.result.cart.items) {
+        const totalPackaging = cartData.result.cart.items.reduce((total: number, item: any) => {
+          const itemPackagingCost = item.menuId?.packagingCost || 0;
+          return total + (itemPackagingCost * item.quantity);
+        }, 0);
+        packagingCost = totalPackaging.toFixed(2);
+      }
+      
       setCartSummary({
         totalPrice: cartData.result.totalPrice || "0.00",
         gst: cartData.result.gst || "0.00",
         deliveryCharge: cartData.result.deliveryCharge || "0.00",
-        totalWithExtras: cartData.result.totalWithExtras || "0.00"
+        totalWithExtras: cartData.result.totalWithExtras || "0.00",
+        packagingCost: packagingCost
       });
     }
   };

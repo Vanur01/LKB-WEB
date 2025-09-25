@@ -123,6 +123,14 @@ const CheckoutPage = () => {
   const totalItems = getTotalItems();
   const subtotal = getTotalPrice();
 
+  // Calculate total packaging cost
+  const getPackagingCost = () => {
+    return cartItems.reduce((total, item) => {
+      const packagingCost = item.packagingCost || 0;
+      return total + (packagingCost * item.quantity);
+    }, 0);
+  };
+
   // Removed hostels array as we're using direct input now
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -578,13 +586,29 @@ const CheckoutPage = () => {
                           </span>
                         </motion.div>
 
+                        {/* Packaging Cost */}
+                        <motion.div
+                          className="flex justify-between text-sm sm:text-base text-zinc-600"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          <span>Packaging Cost (including)</span>
+                          <span className="font-medium">
+                            ₹
+                            {cartSummary && cartSummary.packagingCost
+                              ? parseFloat(cartSummary.packagingCost.toString()).toFixed(2)
+                              : getPackagingCost().toFixed(2)}
+                          </span>
+                        </motion.div>
+
                         {/* Delivery Fee */}
                         {selectedOption === "delivery" && (
                           <motion.div
                             className="flex justify-between text-sm sm:text-base text-zinc-600"
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
+                            transition={{ delay: 0.6 }}
                           >
                             <span>Delivery Charges</span>
                             <span className="font-medium">
@@ -630,6 +654,9 @@ const CheckoutPage = () => {
                           const subtotal = cartSummary
                             ? parseFloat(cartSummary.totalPrice.toString())
                             : getTotalPrice();
+                          const packaging = cartSummary && cartSummary.packagingCost
+                            ? parseFloat(cartSummary.packagingCost.toString())
+                            : getPackagingCost();
                           const delivery =
                             selectedOption === "delivery"
                               ? cartSummary
