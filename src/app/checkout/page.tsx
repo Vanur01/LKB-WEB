@@ -534,7 +534,7 @@ const CheckoutPage = () => {
                       {cartItems.map((item, index) => (
                         <motion.div
                           key={item.id}
-                          className="flex justify-between items-center border-b border-zinc-100 pb-2 last:border-b-0 last:pb-0"
+                          className="border-b border-zinc-100 pb-3 last:border-b-0 last:pb-0"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -544,17 +544,34 @@ const CheckoutPage = () => {
                             damping: 10,
                           }}
                         >
-                          <div className="flex items-center flex-1 gap-3">
-                            <span className="text-sm sm:text-base text-zinc-700">
-                              {item.name}
-                            </span>
-                            <span className="bg-orange-100 text-orange-800 text-xs font-medium h-5 w-5 rounded-full flex items-center justify-center mr-2">
-                              {item.quantity}
+                          {/* Main item row */}
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center flex-1 gap-3">
+                              <span className="text-sm sm:text-base text-zinc-700">
+                                {item.name}
+                              </span>
+                              <span className="bg-orange-100 text-orange-800 text-xs font-medium h-5 w-5 rounded-full flex items-center justify-center mr-2">
+                                {item.quantity}
+                              </span>
+                            </div>
+                            <span className="font-medium text-sm sm:text-base">
+                              ₹{(item.price * item.quantity).toFixed(2)}
                             </span>
                           </div>
-                          <span className="font-medium text-sm sm:text-base">
-                            ₹{(item.price * item.quantity).toFixed(2)}
-                          </span>
+                          
+                          {/* Packaging cost row - only show for delivery and when packaging cost is defined */}
+                          {selectedOption === "delivery" && 
+                           typeof item.packagingCost === 'number' && 
+                           item.packagingCost >= 0 && (
+                            <div className="flex justify-between items-center ml-4 text-xs sm:text-sm text-zinc-500">
+                              <span>
+                                + Packaging cost ({item.quantity}x ₹{item.packagingCost.toFixed(2)})
+                              </span>
+                              <span className="font-medium">
+                                ₹{(item.packagingCost * item.quantity).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
                         </motion.div>
                       ))}
                     </div>
@@ -586,21 +603,23 @@ const CheckoutPage = () => {
                           </span>
                         </motion.div>
 
-                        {/* Packaging Cost */}
-                        <motion.div
-                          className="flex justify-between text-sm sm:text-base text-zinc-600"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          <span>Packaging Cost (including)</span>
-                          <span className="font-medium">
-                            ₹
-                            {cartSummary && cartSummary.packagingCost
-                              ? parseFloat(cartSummary.packagingCost.toString()).toFixed(2)
-                              : getPackagingCost().toFixed(2)}
-                          </span>
-                        </motion.div>
+                        {/* Total Packaging Cost - Only show for delivery */}
+                        {selectedOption === "delivery" && (
+                          <motion.div
+                            className="flex justify-between text-sm sm:text-base text-zinc-600"
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <span>Packaging Cost</span>
+                            <span className="font-medium">
+                              ₹
+                              {cartSummary && cartSummary.packagingCost
+                                ? parseFloat(cartSummary.packagingCost.toString()).toFixed(2)
+                                : getPackagingCost().toFixed(2)}
+                            </span>
+                          </motion.div>
+                        )}
 
                         {/* Delivery Fee */}
                         {selectedOption === "delivery" && (
@@ -654,9 +673,11 @@ const CheckoutPage = () => {
                           const subtotal = cartSummary
                             ? parseFloat(cartSummary.totalPrice.toString())
                             : getTotalPrice();
-                          const packaging = cartSummary && cartSummary.packagingCost
-                            ? parseFloat(cartSummary.packagingCost.toString())
-                            : getPackagingCost();
+                          const packaging = selectedOption === "delivery" 
+                            ? (cartSummary && cartSummary.packagingCost
+                                ? parseFloat(cartSummary.packagingCost.toString())
+                                : getPackagingCost())
+                            : 0;
                           const delivery =
                             selectedOption === "delivery"
                               ? cartSummary
@@ -665,7 +686,7 @@ const CheckoutPage = () => {
                                   )
                                 : deliveryCharges
                               : 0;
-                          return (subtotal + delivery).toFixed(2);
+                          return (subtotal + packaging + delivery).toFixed(2);
                         })()}
                       </motion.span>
                     </div>
